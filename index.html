@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FD5 PRELOVED - Owner Dashboard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f4f6;color:#202124;font-family:Arial,sans-serif}
+header{background:#171717;color:white;padding:22px 6%;display:flex;justify-content:space-between;align-items:center}
+header h2{margin:0;letter-spacing:3px}
+header small{color:#aaa}
+main{max-width:1150px;margin:25px auto;padding:0 18px}
+h2.section{font-size:19px;margin:28px 0 15px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat,.panel{background:white;border-radius:14px;padding:18px;box-shadow:0 3px 15px #00000008}
+.stat small{color:#777}
+.stat h2{margin:12px 0 0;font-size:23px}
+.green{color:#16834a}.red{color:#d33}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+input,select,button{font:inherit}
+input,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:8px;margin:6px 0 12px}
+button{border:0;border-radius:8px;padding:11px 15px;cursor:pointer;font-weight:bold}
+.primary{background:#171717;color:white}
+.secondary{background:#eee;color:#222}
+.sold{background:#b3261e;color:white}
+.available{background:#16834a;color:white}
+.delete{background:#eee;color:#b3261e}
+form label{font-size:13px;color:#555}
+.products{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.product{background:white;border-radius:13px;overflow:hidden;box-shadow:0 3px 15px #00000008}
+.product img{width:100%;height:190px;object-fit:cover;background:#eee}
+.product .info{padding:14px}
+.product h3{margin:0 0 8px}
+.product p{margin:6px 0;color:#666;font-size:13px}
+.tag{display:inline-block;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:bold;background:#e7f5eb;color:#16834a}
+.tag.soldtag{background:#fce8e6;color:#b3261e}
+.product button{margin:8px 4px 0 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:12px 8px;border-bottom:1px solid #eee}
+th{color:#777}
+.empty{color:#888;text-align:center;padding:25px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+footer{text-align:center;color:#999;padding:30px;font-size:12px}
+@media(max-width:750px){
+.stats{grid-template-columns:repeat(2,1fr)}
+.grid{grid-template-columns:1fr}
+.products{grid-template-columns:repeat(2,1fr)}
+.product img{height:155px}
+}
+@media(max-width:430px){.products{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+ <div><h2>FD5 PRELOVED</h2><small>PRIVATE OWNER DASHBOARD</small></div>
+ <div>OWNER PANEL</div>
+</header>
+
+<main>
+ <h2 class="section">Dashboard Keuangan</h2>
+ <div class="stats">
+  <div class="stat"><small>Total Penjualan</small><h2 id="sales">Rp0</h2></div>
+  <div class="stat"><small>Uang Masuk</small><h2 class="green" id="income">Rp0</h2></div>
+  <div class="stat"><small>Uang Keluar</small><h2 class="red" id="expense">Rp0</h2></div>
+  <div class="stat"><small>Keuntungan Bersih</small><h2 id="profit">Rp0</h2></div>
+ </div>
+
+ <h2 class="section">Inventaris Hoodie</h2>
+ <div class="panel">
+  <form id="productForm">
+   <div class="grid">
+    <div>
+     <label>Nama / Merek Hoodie</label>
+     <input id="name" placeholder="Contoh: Nike Hoodie" required>
+    </div>
+    <div>
+     <label>Ukuran</label>
+     <select id="size"><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
+    </div>
+    <div>
+     <label>Harga Modal (Rp)</label>
+     <input id="cost" type="number" min="0" placeholder="100000" required>
+    </div>
+    <div>
+     <label>Harga Jual (Rp)</label>
+     <input id="price" type="number" min="0" placeholder="150000" required>
+    </div>
+   </div>
+   <label>Foto Hoodie</label>
+   <input id="photo" type="file" accept="image/*">
+   <button class="primary" type="submit">+ Tambahkan Hoodie</button>
+  </form>
+ </div>
+
+ <div class="actions" style="margin:16px 0">
+  <button class="secondary" onclick="filterProducts('all')">Semua</button>
+  <button class="secondary" onclick="filterProducts('ready')">Tersedia</button>
+  <button class="secondary" onclick="filterProducts('sold')">Sold</button>
+ </div>
+ <div class="products" id="products"></div>
+
+ <h2 class="section">Catatan Uang Masuk / Keluar</h2>
+ <div class="grid">
+  <div class="panel">
+   <h3>Tambah Transaksi</h3>
+   <form id="transactionForm">
+    <label>Jenis transaksi</label>
+    <select id="type"><option value="in">Uang Masuk</option><option value="out">Uang Keluar</option></select>
+    <label>Keterangan</label>
+    <input id="description" placeholder="Contoh: Penjualan hoodie / ongkir" required>
+    <label>Nominal (Rp)</label>
+    <input id="amount" type="number" min="1" placeholder="150000" required>
+    <button class="primary" type="submit">Simpan Transaksi</button>
+   </form>
+  </div>
+  <div class="panel">
+   <h3>Ringkasan Stok</h3>
+   <p>Hoodie tersedia: <b id="readyCount">0</b></p>
+   <p>Hoodie terjual: <b id="soldCount">0</b></p>
+   <p>Total produk: <b id="totalCount">0</b></p>
+   <button class="secondary" onclick="exportData()">Ekspor Data JSON</button>
+  </div>
+ </div>
+
+ <h2 class="section">Riwayat Transaksi</h2>
+ <div class="panel" style="overflow-x:auto">
+  <table>
+   <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Jenis</th><th>Nominal</th><th></th></tr></thead>
+   <tbody id="history"></tbody>
+  </table>
+  <div id="emptyHistory" class="empty">Belum ada transaksi.</div>
+ </div>
+</main>
+<footer>FD5 PRELOVED · PRIVATE MANAGEMENT SYSTEM</footer>
+
+<script>
+const rupiah=n=>"Rp"+Number(n||0).toLocaleString("id-ID");
+let products=JSON.parse(localStorage.getItem("fd5_products")||"[]");
+let transactions=JSON.parse(localStorage.getItem("fd5_transactions")||"[]");
+let currentFilter="all";
+
+function save(){
+ localStorage.setItem("fd5_products",JSON.stringify(products));
+ localStorage.setItem("fd5_transactions",JSON.stringify(transactions));
+ render();
+}
+function render(){
+ const list=products.filter(p=>currentFilter==="all"||(currentFilter==="sold"?p.sold:!p.sold));
+ document.getElementById("products").innerHTML=list.length?list.map(p=>`
+ <div class="product">
+  <img src="${p.photo||'https://placehold.co/500x400?text=Hoodie'}" alt="Foto hoodie">
+  <div class="info">
+   <h3>${escapeHTML(p.name)}</h3>
+   <p>Ukuran: ${escapeHTML(p.size)}</p>
+   <p>Modal: ${rupiah(p.cost)}</p>
+   <p>Harga jual: <b>${rupiah(p.price)}</b></p>
+   <span class="tag ${p.sold?'soldtag':''}">${p.sold?'SOLD':'TERSEDIA'}</span><br>
+   ${p.sold?'':`<button class="sold" onclick="markSold('${p.id}')">Tandai SOLD</button>`}
+   <button class="delete" onclick="removeProduct('${p.id}')">Hapus</button>
+  </div>
+ </div>`).join(""):'<div class="empty">Belum ada produk.</div>';
+
+ const incoming=transactions.filter(t=>t.type==="in").reduce((s,t)=>s+t.amount,0);
+ const outgoing=transactions.filter(t=>t.type==="out").reduce((s,t)=>s+t.amount,0);
+ const soldProducts=products.filter(p=>p.sold);
+ const sales=soldProducts.reduce((s,p)=>s+p.price,0);
+ const costs=soldProducts.reduce((s,p)=>s+p.cost,0);
+ document.getElementById("sales").textContent=rupiah(sales);
+ document.getElementById("income").textContent=rupiah(incoming);
+ document.getElementById("expense").textContent=rupiah(outgoing);
+ document.getElementById("profit").textContent=rupiah(incoming-outgoing-costs);
+ document.getElementById("readyCount").textContent=products.filter(p=>!p.sold).length;
+ document.getElementById("soldCount").textContent=soldProducts.length;
+ document.getElementById("totalCount").textContent=products.length;
+
+ document.getElementById("history").innerHTML=transactions.slice().reverse().map(t=>`
+ <tr><td>${new Date(t.date).toLocaleDateString("id-ID")}</td>
+ <td>${escapeHTML(t.description)}</td>
+ <td class="${t.type==='in'?'green':'red'}">${t.type==='in'?'Masuk':'Keluar'}</td>
+ <td>${rupiah(t.amount)}</td>
+ <td><button class="delete" onclick="removeTransaction('${t.id}')">Hapus</button></td></tr>`).join("");
+ document.getElementById("emptyHistory").style.display=transactions.length?"none":"block";
+}
+function escapeHTML(s){
+ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function filterProducts(f){currentFilter=f;render()}
+document.getElementById("productForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const file=document.getElementById("photo").files[0];
+ const add=photo=>{
+  products.push({id:crypto.randomUUID(),name:name.value,size:size.value,cost:+cost.value,price:+price.value,photo,sold:false});
+  save();e.target.reset();
+ };
+ if(file){
+  const reader=new FileReader();
+  reader.onload=()=>add(reader.result);
+  reader.readAsDataURL(file);
+ }else add("");
+});
+function markSold(id){
+ const p=products.find(x=>x.id===id);
+ if(!p||p.sold)return;
+ if(!confirm("Tandai hoodie ini sebagai SOLD?"))return;
+ p.sold=true;
+ transactions.push({id:crypto.randomUUID(),type:"in",description:"Penjualan: "+p.name,amount:p.price,date:new Date().toISOString()});
+ save();
+}
+function removeProduct(id){
+ if(confirm("Hapus produk ini?")){products=products.filter(p=>p.id!==id);save()}
+}
+document.getElementById("transactionForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ transactions.push({id:crypto.randomUUID(),type:type.value,description:description.value,amount:+amount.value,date:new Date().toISOString()});
+ save();e.target.reset();
+});
+function removeTransaction(id){
+ if(confirm("Hapus transaksi ini?")){transactions=transactions.filter(t=>t.id!==id);save()}
+}
+function exportData(){
+ const blob=new Blob([JSON.stringify({products,transactions},null,2)],{type:"application/json"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);a.download="fd5-backup.json";a.click();
+ URL.revokeObjectURL(a.href);
+}
+render();
+</script>
+</body>
+</html>
